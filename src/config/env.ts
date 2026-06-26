@@ -9,6 +9,7 @@ const envSchema = z.object({
   DB_PASSWORD: z.string(),
   DB_DATABASE: z.string(),
   APP_KEY: z.string(),
+  NODE_ENV: z.string().default('development'),
 });
 
 const env = envSchema.parse(process.env);

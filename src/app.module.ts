@@ -4,9 +4,11 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module.js';
 import { AuthGuard } from './auth/auth.guard.js';
+import { PostsModule } from './posts/posts.module.js';
+import { CaslModule } from './casl/casl.module.js';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule],
+  imports: [PrismaModule, CaslModule, AuthModule, UsersModule, PostsModule],
   controllers: [],
   providers: [
     {

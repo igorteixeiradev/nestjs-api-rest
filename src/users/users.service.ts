@@ -11,10 +11,10 @@ import { UserEntity } from './entities/user.entity.js';
 
 @Injectable()
 export class UsersService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
-    const userExists = await this.prismaService.user.findUnique({
+    const userExists = await this.prisma.user.findUnique({
       where: { email: createUserDto.email },
     });
 
@@ -24,28 +24,27 @@ export class UsersService {
 
     const hash = await bcrypt.hash(createUserDto.password, saltOrRounds);
 
-    const user = await this.prismaService.user.create({
+    const user = await this.prisma.user.create({
       data: {
         name: createUserDto.name,
         email: createUserDto.email,
         password: hash,
-        role: createUserDto.role,
       },
     });
 
     return new UserEntity({ ...user });
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(): Promise<UserEntity[]> {
+    return await this.prisma.user.findMany();
   }
 
   async findOne(id: string): Promise<UserEntity> {
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
 
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException(`User with id ${id} not found`);
 
     return new UserEntity({ ...user });
   }
@@ -53,7 +52,7 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     const userExists = await this.findOne(id);
 
-    const updatedUser = await this.prismaService.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: userExists.id },
       data: {
         name: updateUserDto.name,
@@ -69,7 +68,7 @@ export class UsersService {
   async remove(id: string) {
     await this.findOne(id);
 
-    await this.prismaService.user.delete({
+    await this.prisma.user.delete({
       where: { id },
     });
   }

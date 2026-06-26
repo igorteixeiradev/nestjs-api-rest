@@ -9,6 +9,6 @@ export class PrismaService extends PrismaClient {
     const adapter = new PrismaPg({
       connectionString: `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_DATABASE}`,
     });
-    super({ adapter });
+    super({ adapter,  log: env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : [],});
   }
 }
