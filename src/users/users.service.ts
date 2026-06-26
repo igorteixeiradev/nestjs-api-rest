@@ -1,26 +1,76 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import * as bcrypt from 'bcrypt';
+import { UserEntity } from './entities/user.entity.js';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private prismaService: PrismaService) {}
+
+  async create(createUserDto: CreateUserDto): Promise<UserEntity> {
+    const userExists = await this.prismaService.user.findUnique({
+      where: { email: createUserDto.email },
+    });
+
+    if (userExists) throw new BadRequestException('User already exists');
+
+    const saltOrRounds = 10;
+
+    const hash = await bcrypt.hash(createUserDto.password, saltOrRounds);
+
+    const user = await this.prismaService.user.create({
+      data: {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: hash,
+        role: createUserDto.role,
+      },
+    });
+
+    return new UserEntity({ ...user });
   }
 
   findAll() {
     return `This action returns all users`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string): Promise<UserEntity> {
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return new UserEntity({ ...user });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+    const userExists = await this.findOne(id);
+
+    const updatedUser = await this.prismaService.user.update({
+      where: { id: userExists.id },
+      data: {
+        name: updateUserDto.name,
+        email: updateUserDto.email,
+        password: updateUserDto.password,
+        role: updateUserDto.role,
+      },
+    });
+
+    return new UserEntity({ ...updatedUser });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    await this.findOne(id);
+
+    await this.prismaService.user.delete({
+      where: { id },
+    });
   }
 }
