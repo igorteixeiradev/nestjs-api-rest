@@ -10,11 +10,11 @@ import { UserEntity } from '../users/entities/user.entity.js';
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private prismaService: PrismaService,
+    private prisma: PrismaService,
   ) {}
 
   async login(loginAuthDto: LoginAuthDto) {
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email: loginAuthDto.email },
     });
 

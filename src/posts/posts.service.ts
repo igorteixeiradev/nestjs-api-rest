@@ -26,17 +26,45 @@ export class PostsService {
     return new PostEntity({ ...post, author: userEntity });
   }
 
-  async findAll() {
-    const posts = await this.prisma.post.findMany({
-      include: {
-        author: true,
-      },
-    });
+  async findAll(page: number = 1, limit: number = 10) {
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 10;
+    if (limit > 100) limit = 100;
 
-    return posts.map((post) => {
-      const userEntity = new UserEntity({ ...post.author });
-      return new PostEntity({ ...post, author: userEntity });
-    });
+    const skip = (page - 1) * limit;
+
+    const [posts, total] = await Promise.all([
+      this.prisma.post.findMany({
+        include: {
+          author: true,
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc', // Posts mais recentes primeiro
+        },
+      }),
+      this.prisma.post.count(),
+    ]);
+
+    // Mapear para entidades
+    const data = posts.map(
+      (post) =>
+        new PostEntity({
+          ...post,
+          author: new UserEntity(post.author),
+        }),
+    );
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string) {

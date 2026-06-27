@@ -36,7 +36,7 @@ const rolePermissionsMap: Record<Role, DefinePermissions> = {
 export class CaslAbilityService {
   ability: AppAbility;
 
-  defineAbilityFor(user: any) {
+  defineAbilityFor(user: User) {
     const builder = new AbilityBuilder<AppAbility>(createPrismaAbility);
     rolePermissionsMap[user.role](user, builder);
     this.ability = builder.build();
