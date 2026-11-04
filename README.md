@@ -47,15 +47,20 @@ $ pnpm run start:prod
 ## Run tests
 
 ```bash
-# unit tests
-$ pnpm run test
+# unit tests (no database needed)
+$ pnpm test
 
-# e2e tests
-$ pnpm run test:e2e
+# e2e tests (needs Postgres running: `docker compose up -d`)
+$ pnpm test:e2e
 
 # test coverage
-$ pnpm run test:cov
+$ pnpm test:cov
 ```
+
+The e2e tests run against their **own database** (`<DB_DATABASE>_test`, e.g. `app_test`),
+which is created and migrated automatically before the suite starts, so your
+development data is never touched. They cover authentication, the global guard,
+the CASL authorization rules (ADMIN / EDITOR / WRITER / READER), validation and pagination.
 
 ## Deployment
 

@@ -25,36 +25,42 @@ export class PostsController {
   @Post()
   async create(
     @Body() createPostDto: CreatePostDto,
-    @Auth() user: UserEntity,
+    @Auth() actor: UserEntity,
   ): Promise<PostEntity> {
-    return await this.postsService.create({
-      ...createPostDto,
-      authorId: user.id,
-    });
+    return await this.postsService.create(createPostDto, actor);
   }
 
   @Get()
-  async findAll(@Query() query: PaginationQueryDto) {
-    const { page = 1, limit = 10 } = query;
-    return await this.postsService.findAll(+page, +limit);
+  async findAll(
+    @Query() { page, limit }: PaginationQueryDto,
+    @Auth() actor: UserEntity,
+  ) {
+    return await this.postsService.findAll(page, limit, actor);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<PostEntity> {
-    return await this.postsService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @Auth() actor: UserEntity,
+  ): Promise<PostEntity> {
+    return await this.postsService.findOne(id, actor);
   }
 
   @Patch(':id')
   async update(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
+    @Auth() actor: UserEntity,
   ): Promise<PostEntity> {
-    return await this.postsService.update(id, updatePostDto);
+    return await this.postsService.update(id, updatePostDto, actor);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
-    return await this.postsService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @Auth() actor: UserEntity,
+  ): Promise<void> {
+    return await this.postsService.remove(id, actor);
   }
 }
